@@ -152,13 +152,13 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
             }
         });
     }
-
+    
     @Override
     public void onRemove() {
         mClusterManager.getMarkerCollection().setOnMarkerClickListener(null);
         mClusterManager.getClusterMarkerCollection().setOnMarkerClickListener(null);
     }
-
+        
     private LayerDrawable makeClusterBackground() {
         mColoredCircleBackground = new ShapeDrawable(new OvalShape());
         ShapeDrawable outline = new ShapeDrawable(new OvalShape());
@@ -212,7 +212,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
         }
         return BUCKETS[BUCKETS.length - 1];
     }
-
+    
     /**
      * ViewModifier ensures only one re-rendering of the view occurs at a time, and schedules
      * re-rendering, which is performed by the RenderTask.
@@ -680,8 +680,14 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
             mCacheReverse.remove(m);
             mCache.remove(item);
         }
+        
+        public void clean()
+        {
+        	mCache.clear();
+        	mCacheReverse.clear();
+        }
     }
-
+    
     /**
      * Called before the marker for a ClusterItem is added to the map.
      */
@@ -867,5 +873,11 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
             LatLng position = new LatLng(lat, lng);
             marker.setPosition(position);
         }
+    }
+    
+    /** Clear the marker cache */
+    public void clearMarkerCache()
+    {
+    	mMarkerCache.clean();
     }
 }
