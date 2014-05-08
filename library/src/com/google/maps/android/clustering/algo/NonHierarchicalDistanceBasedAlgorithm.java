@@ -36,8 +36,8 @@ public class NonHierarchicalDistanceBasedAlgorithm<T extends ClusterItem> implem
     /**
      * Any modifications should be synchronized on mQuadTree.
      */
-    private final Collection<QuadItem<T>> mItems = new ArrayList<QuadItem<T>>();
-
+    private final Map<T, QuadItem<T>> mMapItems = new HashMap<T, QuadItem<T>>();
+    
     /**
      * Any modifications should be synchronized on mQuadTree.
      */
@@ -49,7 +49,7 @@ public class NonHierarchicalDistanceBasedAlgorithm<T extends ClusterItem> implem
     public void addItem(T item) {
         final QuadItem<T> quadItem = new QuadItem<T>(item);
         synchronized (mQuadTree) {
-            mItems.add(quadItem);
+            mMapItems.put(item, quadItem);
             mQuadTree.add(quadItem);
         }
     }
@@ -64,15 +64,18 @@ public class NonHierarchicalDistanceBasedAlgorithm<T extends ClusterItem> implem
     @Override
     public void clearItems() {
         synchronized (mQuadTree) {
-            mItems.clear();
+            mMapItems.clear();
             mQuadTree.clear();
         }
     }
 
     @Override
     public void removeItem(T item) {
-        // TODO: delegate QuadItem#hashCode and QuadItem#equals to its item.
-        throw new UnsupportedOperationException("NonHierarchicalDistanceBasedAlgorithm.remove not implemented");
+    	QuadItem<T> quad = mMapItems.get(item);
+    	mMapItems.remove(item);
+    	if(quad != null)
+    		mQuadTree.remove(quad);
+    	
     }
 
     @Override
@@ -87,7 +90,7 @@ public class NonHierarchicalDistanceBasedAlgorithm<T extends ClusterItem> implem
         final Map<QuadItem<T>, StaticCluster<T>> itemToCluster = new HashMap<QuadItem<T>, StaticCluster<T>>();
 
         synchronized (mQuadTree) {
-            for (QuadItem<T> candidate : mItems) {
+            for (QuadItem<T> candidate : mMapItems.values()) {
                 if (visitedCandidates.contains(candidate)) {
                     // Candidate is already part of another cluster.
                     continue;
@@ -131,7 +134,7 @@ public class NonHierarchicalDistanceBasedAlgorithm<T extends ClusterItem> implem
     public Collection<T> getItems() {
         final List<T> items = new ArrayList<T>();
         synchronized (mQuadTree) {
-            for (QuadItem<T> quadItem : mItems) {
+            for (QuadItem<T> quadItem : mMapItems.values()) {
                 items.add(quadItem.mClusterItem);
             }
         }
