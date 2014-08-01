@@ -83,6 +83,11 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 	private boolean mAskCache;
 	
 	/**
+	 * Enable/Diable markers animation
+	 */
+	private boolean mAnimateMarkers;
+	
+	/**
 	 * Markers for single ClusterItems.
 	 */
 	private MarkerCache<T> mMarkerCache = new MarkerCache<T>();
@@ -123,6 +128,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 		mIconGenerator.setBackground(makeClusterBackground());
 		mClusterManager = clusterManager;
 		mAskCache = true;
+		mAnimateMarkers = true;
 	}
 
 	@Override
@@ -371,7 +377,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 				if (zoomingIn && onScreen && SHOULD_ANIMATE) {
 					Point point = mSphericalMercatorProjection.toPoint(c.getPosition());
 					Point closest = findClosestCluster(existingClustersOnScreen, point);
-					if (closest != null) {
+					if (mAnimateMarkers && closest != null) {
 						LatLng animateTo = mSphericalMercatorProjection.toLatLng(closest);
 						markerModifier.add(true, new CreateMarkerTask(c, newMarkers, animateTo));
 					} else {
@@ -750,6 +756,7 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 		}
 
 		private void perform(MarkerModifier markerModifier) {
+			
 			// Don't show small clusters. Render the markers inside, instead.
 			if (!shouldRenderAsCluster(cluster)) {
 				for (T item : cluster.getItems()) {
@@ -774,9 +781,11 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 					} else {
 						markerWithPosition = new MarkerWithPosition(marker);
 					}
+				
 					onClusterItemRendered(item, marker);
 					newMarkers.add(markerWithPosition);
 				}
+				// Cache reactivation
 				mAskCache = true;
 				return;
 			}
@@ -894,7 +903,6 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 	{
 		mMarkerCache.clean();
 	}
-
 	/** 
 	 * Remove a marker from its cache if needed.
 	 * Avoid re-adding just removed marker.
@@ -907,7 +915,6 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 		
 		mMarkerCache.remove(m);
 	}
-	
 	/**
 	 * Enable cache asking when looking for markers
 	 */
@@ -915,12 +922,26 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements ClusterRen
 	{
 		mAskCache = true;
 	}
-	
 	/**
-	 * Desactivate cache asking when looking for markers
+	 * Disable cache asking when looking for markers
 	 */
 	public void disableCache()
 	{
 		mAskCache = false;
 	}
+	/**
+	 * Enable animations when adding markers
+	 */
+	public void enableAnimateMarkers()
+	{
+		mAnimateMarkers = true;
+	}
+	/**
+	 * Disable animations when adding markers 
+	 */
+	public void disableAnimateMarkers()
+	{
+		mAnimateMarkers = false;
+	}
+
 }
